@@ -1,0 +1,1 @@
+web: gunicorn djangoluma.wsgi --log-file -
