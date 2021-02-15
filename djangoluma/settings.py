@@ -32,6 +32,8 @@ DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
+AUTH_USER_MODEL = 'base.User'
+
 
 # Application definition
 
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'collectfast',
     'django.contrib.staticfiles',
     'djangoluma.base',
 ]
@@ -132,6 +135,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
+COLLECTFAST_ENABLED = False
+
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
 
 if AWS_ACCESS_KEY_ID:
@@ -141,8 +146,8 @@ if AWS_ACCESS_KEY_ID:
     AWS_PRELOAD_METADATA = True
     AWS_AUTO_CREATE_BUCKET = False
     AWS_QUERYSTRING_AUTH = True
-    AWS_S3_CUSTOM_DOMAIN = None
-    AWS_DEFAULT_ACL = 'private'
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    AWS_DEFAULT_ACL = 'public'
 
     # static assets
     STATICFILES_STORAGE = 's3_folder_storage.s3.StaticStorage'
@@ -159,3 +164,7 @@ if AWS_ACCESS_KEY_ID:
 
     INSTALLED_APPS.append('s3_folder_storage')
     INSTALLED_APPS.append('storages')
+
+    COLLECTFAST_ENABLED = True
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    COLLECTFAST_STRATEGY = 'collectfast.strategies.boto3.Boto3Strategy'
