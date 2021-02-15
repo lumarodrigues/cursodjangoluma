@@ -11,10 +11,13 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+from decouple import config, Csv
 import os
 import dj_database_url
 from functools import partial
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -56,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'djangoluma.urls'
@@ -77,6 +81,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'djangoluma.wsgi.application'
+
+# Configuração Django Debug Toolbar
+
+INTERNAL_IPS = config('INTERNAL_IPS', cast=Csv(), default='127.0.0.1')
+
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 
 # Database
@@ -176,3 +188,15 @@ if AWS_ACCESS_KEY_ID:
     COLLECTFAST_ENABLED = True
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     COLLECTFAST_STRATEGY = 'collectfast.strategies.boto3.Boto3Strategy'
+
+
+SENTRY_DSN = config('SENTRY_DSN', default=None)
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=1.0,
+
+        send_default_pii=True
+    )
